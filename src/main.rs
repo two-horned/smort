@@ -1,20 +1,45 @@
-use std::io::{stdin, Result, stdout, Write};
+use smort::fraction::Fraction;
+
 //use std::f64::consts::{PI, E};
-use smort::{help, is_quit, is_help};
-use smort::syntax::is_legal;
-use smort::calculator::{calculate, is_two_signs};
-fn main() -> Result<()> {
-        println!("Enter 'h' for help");
+use {
+    smort::calculator2::{calculate,fraction_to_float},
+    std::io::{self, Write},
+};
+
+fn credits() {
+    println!("Smort Calculator by Said Kadrioski");
+}
+
+fn help() {
+    println!("Available Commands:");
+    println!("    'h': show help,");
+    println!("    'd': show last result as decimal,");
+    println!("    '[apply]': apply following operation on the last result,");
+    println!("    'c': show credits,");
+    println!("    'q': quit application,");
+    println!();
+    println!("Available Operants:");
+    println!("    + (addition),");
+    println!("    - (subtraction),");
+    println!("    * (multiplication),");
+    println!("    / (division),");
+    println!("    ^ (power of),");
+    println!("    % (modulo),");
+    println!("You can use parenthesis too.");
+}
+
+fn main() -> io::Result<()> {
+    let mut l = Fraction::new(0.0,1.0).unwrap();
+    println!("Enter 'h' for help");
     loop {
         print!(": ");
-        stdout().flush()?;
-
+        io::stdout().flush()?;
         let mut e = String::new();
-        stdin().read_line(&mut e)?;
+        io::stdin().read_line(&mut e)?;
         e.retain(|c| c != ' ');
-
         let e = {
-            while is_two_signs(&e) {
+            while e.contains("--") || e.contains("-+") || e.contains("+-") || e.contains("++") || e.contains("[apply]") {
+                e = e.replace("[apply]", &l.to_string());
                 e = e.replace("+-", "-");
                 e = e.replace("-+", "-");
                 e = e.replace("--", "+");
@@ -22,20 +47,22 @@ fn main() -> Result<()> {
             }
             e.trim()
         };
-        //let e = e.replace("pi", &PI.to_string());
-        //let e = e.replace("e", &E.to_string());
-
-        if is_quit(e) {
-            break;
-        } else if is_help(e) {
-            help();
-        } else if is_legal(e) {
-            println!("{} = {}", e, calculate(e));
-        } else {
-            println!("Wrong input. Deleting your filesystem...")
+        match e {
+            "q" => break,
+            "h" => help(),
+            "d" => println!("{}", fraction_to_float(l)),
+            "c" => credits(),
+            _ => {
+                let ans = calculate(e);
+                match ans {
+                    Err(e) => println!("Error: {:?}", e),
+                    Ok(o) => {
+                        l = o;
+                        println!("= {}", o)
+                    },
+                }
+            }
         }
-
     }
-    println!("Smort Calculator by Said Kadrioski");
     Ok(())
 }

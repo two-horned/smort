@@ -1,109 +1,116 @@
-const OPERATORS: &str = "+-*/%!^()";
-fn splitter(e: &str, s: char) -> [&str; 2] {
-    let vec = e.split_once(s).unwrap();
-    [vec.0, vec.1]
-}
-fn pow(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = calculate(b);
-    a.powf(b)
+const OPERATORS: &'static str = "+-*/%!^()!";
+
+fn swapper(s: &str, c: char, n: char) -> String {
+    s.chars()
+        .map(|f| {
+            if f == c {
+                n
+            } else if f == n {
+                c
+            } else {
+                f
+            }
+        })
+        .collect()
 }
 
-fn modo(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = calculate(b);
-    a % b
+fn factorial(n: u64) -> u64 {
+    match n {
+        0 | 1 => 1,
+        _ => factorial(n - 1) * n,
+    }
 }
 
-fn dev(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = calculate(b);
-    a / b
-}
+pub fn calculate(e: &str) -> Result<f64, CalculatorError> {
+    if e.is_empty() {
+        return Ok(0.0);
+    } else if e.chars().all(|c| !OPERATORS.contains(c)) {
+        return match e.parse() {
+            Ok(e) => Ok(e),
+            _ => Err(CalculatorError::InvalidInputError(e.to_string())),
+        };
+    }
 
-fn mul(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = calculate(b);
-    a * b
-}
-
-fn sep_sub(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = calculate(b);
-    a - b
-}
-
-fn sub(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = {
-        let b: String = b.chars().map(|c| match c { '-' => '+', '+' => '-', _ => c, }).collect();
-        calculate(&b)
+    let mut o = if e.contains('(') {
+        '('
+    } else if e.contains(')') {
+        ')'
+    } else if e.contains('%') {
+        '%'
+    } else if e.contains('+') {
+        '+'
+    } else if e.contains('-') {
+        '-'
+    } else if e.contains('/') {
+        '/'
+    } else if e.contains('*') {
+        '*'
+    } else if e.contains('^') {
+        '^'
+    } else {
+        '!'
     };
-    a - b
-}
-
-fn add(a: &str, b: &str) -> f64 {
-    let a = calculate(a);
-    let b = calculate(b);
-    a + b
-}
-
-fn seperator(e: &str) -> f64 {
-    let [a, b] = splitter(e, '(');
-    if a.len() != 0 {
-        let operant = a.chars().last().unwrap();
-        match operant {
-            '+' => return add(a, b),
-            '-' => return sep_sub(a, b),
-            '/' => return dev(a, b),
-            '%' => return modo(a, b),
-            '^' => return pow(a, b),
-            _ => return mul(a, b),
+    let (mut a, mut b) = e.split_once(o).unwrap();
+    let is_swap = o != '(';
+    if a.is_empty() && b.is_empty() {
+        return Ok(0.0);
+    } else if o == '(' {
+        if a.is_empty() {
+            return calculate(b);
+        }
+        o = a.chars().last().unwrap();
+        if OPERATORS.contains(o) {
+            a = &a[0..a.len() - 1];
+        }
+    } else if o == ')' {
+        if b.is_empty() {
+            return calculate(a);
+        }
+        o = b.chars().next().unwrap();
+        if OPERATORS.contains(o) {
+            b = &b[1..b.len()];
+        }
+    }
+    let b = if is_swap {
+        match o {
+            '/' => calculate(&swapper(b, '/', '*'))?,
+            '-' => calculate(&swapper(b, '-', '+'))?,
+            _ => calculate(b)?,
         }
     } else {
-        return calculate(b);
+        calculate(b)?
+    };
+    if b == 0_f64 && o == '/' {
+        return Err(CalculatorError::DivideWithZeroError);
     }
+    let a = calculate(a)?;
+    let ans = match o {
+        ')' => a,
+        '+' => a + b,
+        '-' => a - b,
+        '/' => a / b,
+        '%' => a % b,
+        '^' => a.powf(b),
+        '!' => factorial(a as u64) as f64,
+        _ => a * b,
+    };
+    Ok(ans)
 }
-
-pub fn is_two_signs(e: &str) -> bool {
-    if e.contains("--")|| e.contains("-+")|| e.contains("+-") ||e.contains("++") {
-        return true;
-    }
-    false
+/*
+enum Operation {
+    add,
+    sub,
+    mul,
+    div,
+    modu,
+    pow,
+    fac,
+    open,
+    close,
 }
-
-pub fn calculate(e: &str) -> f64 {
-    let mut ec = e.chars();
-    if ec.all(|c| !OPERATORS.contains(c)) && !e.is_empty() {
-        let solution: f64 = e.parse().expect("Parsing the given String failed.");
-        return solution;
-    } else if e.is_empty() {
-        return 0.0;
-    }
-
-    if e.contains('(') {
-        return seperator(e);
-    } else if e.contains(')') {
-        return calculate(splitter(e, ')')[0]);
-    } else if e.contains('%') {
-        let [a, b] = splitter(e, '%');
-        return modo(a, &b);
-    } else if e.contains('+') {
-        let [a, b] = splitter(e, '+');
-        return add(a, b);
-    } else if e.contains('-') {
-        let [a, b] = splitter(e, '-');
-        return sub(a, b);
-    } else if e.contains('/') {
-        let [a, b] = splitter(e, '/');
-        return dev(a, b);
-    } else if e.contains('*') {
-        let [a, b] = splitter(e, '*');
-        return mul(a, b);
-    } else if e.contains('^') {
-        let [a, b] = splitter(e, '^');
-        return pow(a, b);
-    }
-    panic!("No such operation found.")
+*/
+#[derive(Debug)]
+pub enum CalculatorError {
+    DivideWithZeroError,
+    InvalidInputError(String),
 }
-

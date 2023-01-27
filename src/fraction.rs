@@ -34,6 +34,9 @@ where
     }
 
     pub fn powi(&self, i: i32) -> Self {
+        if *self * *self == *self {
+            return *self;
+        }
         let mut i = i;
         let mut me = *self;
         if i == 0 {

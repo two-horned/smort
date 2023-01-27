@@ -70,18 +70,21 @@ fn calc(e: &str) -> Result<Fraction<f32>, CalculatorError> {
             _ => Err(CalculatorError::InvalidInputError(String::from(e))),
         };
     };
+    let (mut a, mut b) = e.split_once(o).unwrap();
     if o == '(' || o == ')' || o == '!' {
-        let (a, b) = e.split_once(o).unwrap();
         if o == '(' {
             if a.is_empty() {
                 return calc(b);
             }
             o = a.chars().last().unwrap();
+            a = a.strip_suffix(o).unwrap();
+
         } else if o == ')' {
             if b.is_empty() {
                 return calc(a);
             }
             o = b.chars().next().unwrap();
+            b = b.strip_prefix(o).unwrap();
         } else if o == '!' {
             if a.is_empty() {
                 return Err(CalculatorError::InvalidInputError(String::from(b)));

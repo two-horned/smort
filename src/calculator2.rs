@@ -5,8 +5,25 @@ pub const NORMAL_OPERATORS: &str = "+*/%^!";
 pub const OPERATORS: &str = "+-*/%!^()!";
 pub const NUMBERS: &str = "1234567890.";
 
-pub fn fraction_to_float(f: Fraction<f32>) -> f32 {
-    f.numerator() / f.dividor()
+pub fn fraction_to_float(f: Fraction<isize>) -> f32 {
+    f.numerator() as f32 / f.dividor() as f32
+}
+
+fn string_to_fraction(s: String) -> Result<Fraction<isize>, CalculatorError> {
+    let mut l = 0;
+    let mut s = s;
+    if s.contains(".") {
+        let (_,b) = s.split_once(".").unwrap();
+        if b.contains(".") {
+            CalculatorError::InvalidInputError(s.clone());
+        }
+        l = b.len();
+        s.retain(|c| c != '.');
+    }
+    let n = s.parse().unwrap();
+    let d = 10_isize.pow(l.try_into().unwrap());
+    let f = Fraction::new(n,d).unwrap();
+    Ok(f)
 }
 
 fn factorial(n: isize) -> isize {
@@ -16,7 +33,7 @@ fn factorial(n: isize) -> isize {
     }
 }
 
-pub fn calculate(e: &str) -> Result<Fraction<f32>, CalculatorError> {
+pub fn calculate(e: &str) -> Result<Fraction<isize>, CalculatorError> {
     if e.is_empty() {
         return Err(CalculatorError::EmptyInputError);
     } else if e
@@ -45,7 +62,7 @@ pub fn calculate(e: &str) -> Result<Fraction<f32>, CalculatorError> {
     Ok(calc(e)?)
 }
 
-fn calc(e: &str) -> Result<Fraction<f32>, CalculatorError> {
+fn calc(e: &str) -> Result<Fraction<isize>, CalculatorError> {
     let mut o = if e.contains('(') {
         '('
     } else if e.contains(')') {
@@ -65,10 +82,7 @@ fn calc(e: &str) -> Result<Fraction<f32>, CalculatorError> {
     } else if e.contains('!') {
         '!'
     } else {
-        return match e.parse() {
-            Ok(i) => Ok(Fraction::new(i, 1.0).unwrap()),
-            _ => Err(CalculatorError::InvalidInputError(String::from(e))),
-        };
+        return string_to_fraction(e.to_string());
     };
     let (mut a, mut b) = e.split_once(o).unwrap();
     if o == '(' || o == ')' || o == '!' {
@@ -90,7 +104,7 @@ fn calc(e: &str) -> Result<Fraction<f32>, CalculatorError> {
                 return Err(CalculatorError::InvalidInputError(String::from(b)));
             }
             let a = factorial(a.parse().unwrap());
-            let a = Fraction::new(a as f32, 1.0).unwrap();
+            let a = Fraction::new(a, 1).unwrap();
             if b.is_empty() {
                 return Ok(a);
             }
@@ -110,7 +124,7 @@ fn calc(e: &str) -> Result<Fraction<f32>, CalculatorError> {
     let mut s = e.split(o);
     let a = s.next().unwrap();
     let mut a = if a.is_empty() {
-        Fraction::new(0.0, 1.0).unwrap()
+        Fraction::new(0, 1).unwrap()
     } else {
         calc(a)?
     };

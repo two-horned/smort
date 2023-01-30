@@ -5,7 +5,7 @@ struct BTree {
 }
 
 impl BTree {
-    fn new() -> BTree {
+    fn new(n, k, p) -> BTree {
         BTree {}
     }
 }

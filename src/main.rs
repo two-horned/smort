@@ -50,7 +50,7 @@ fn main() -> io::Result<()> {
         match e {
             "q" => break,
             "h" => help(),
-            "d" => println!("{}", fraction_to_float(l)),
+            "d" => println!("≈ {}", fraction_to_float(l)),
             "c" => credits(),
             _ => {
                 let ans = calculate(e);

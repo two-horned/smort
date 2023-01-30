@@ -5,8 +5,8 @@ pub const NORMAL_OPERATORS: &str = "+*/%^!";
 pub const OPERATORS: &str = "+-*/%!^()!";
 pub const NUMBERS: &str = "1234567890.";
 
-pub fn fraction_to_float(f: Fraction<isize>) -> f32 {
-    f.numerator() as f32 / f.dividor() as f32
+pub fn fraction_to_float(f: Fraction<isize>) -> f64 {
+    f.numerator() as f64 / f.dividor() as f64
 }
 
 fn string_to_fraction(s: String) -> Result<Fraction<isize>, CalculatorError> {

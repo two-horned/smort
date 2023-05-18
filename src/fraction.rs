@@ -270,6 +270,9 @@ where
     fn div_assign(&mut self, rhs: Self) {
         self.n *= rhs.d;
         self.d *= rhs.n;
+        if self.d == self.d + self.d {
+            panic!("Divion with Zero");
+        }
         self.simplify_assign();
     }
 }

@@ -135,7 +135,10 @@ fn calc(e: &str) -> Result<Fraction<isize>, CalculatorError> {
             '-' => a -= b,
             '%' => a %= b,
             '^' => a = a.powi(b.numerator() as i32),
-            '/' => a /= b,
+            '/' => {
+                if b == b + b {
+                    return Err(CalculatorError::DivideWithZeroError);
+                } a /= b},
             '*' => a *= b,
             _ => panic!("WHAAATT!?!"),
         };

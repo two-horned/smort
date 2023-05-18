@@ -25,6 +25,7 @@ fn help() {
     println!("    / (division),");
     println!("    ^ (power of),");
     println!("    % (modulo),");
+    println!("    ! (faculty)");
     println!("You can use parenthesis too.");
 }
 

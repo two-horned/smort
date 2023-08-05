@@ -140,7 +140,7 @@ fn calc(e: &str) -> Result<Fraction<isize>, CalculatorError> {
                     return Err(CalculatorError::DivideWithZeroError);
                 } a /= b},
             '*' => a *= b,
-            _ => panic!("WHAAATT!?!"),
+            _ => unreachable!("you reached supposedly unreachable code"),
         };
     }
     Ok(a)

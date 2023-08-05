@@ -12,11 +12,12 @@ fn credits() {
 
 fn help() {
     println!("Available Commands:");
-    println!("    'h': show help,");
-    println!("    'd': show last result as decimal,");
+    println!("    'h' or 'help': show help,");
+    println!("    'd' or 'decimal': show last result as decimal,");
     println!("    '[a]': apply following operation on the last result,");
-    println!("    'c': show credits,");
-    println!("    'q': quit application,");
+    println!("    'c' or 'credits': show credits,");
+    println!("    'q' or 'quit': quit application,");
+    println!("    'l' or 'clear': to clear the screen.");
     println!();
     println!("Available Operants:");
     println!("    + (addition),");
@@ -29,7 +30,12 @@ fn help() {
     println!("You can use parenthesis too.");
 }
 
+fn clear() {
+    print!("\x1B[2J\x1B[1;1H");
+}
+
 fn main() -> io::Result<()> {
+    clear();
     let mut l = Fraction::new(0,1).unwrap();
     println!("Enter 'h' for help");
     loop {
@@ -49,10 +55,11 @@ fn main() -> io::Result<()> {
             e.trim()
         };
         match e {
-            "q" => break,
-            "h" => help(),
-            "d" => println!("≈ {}", fraction_to_float(l)),
-            "c" => credits(),
+            "q" | "quit" => break,
+            "h" | "help" => help(),
+            "d" | "decimal" => println!("≈ {}", fraction_to_float(l)),
+            "c" | "credits" => credits(),
+            "l" | "clear" => clear(),
             _ => {
                 let ans = calculate(e);
                 match ans {

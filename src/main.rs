@@ -2,7 +2,7 @@ use smort::fraction::Fraction;
 
 //use std::f64::consts::{PI, E};
 use {
-    smort::calculator2::{calculate,fraction_to_float},
+    smort::calculator::{calculate,fraction_to_float},
     std::io::{self, Write},
 };
 

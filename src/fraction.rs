@@ -1,5 +1,5 @@
 use {
-    core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign},
+    core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign, Neg},
     std::{
         fmt::{self, Display},
         str::FromStr,
@@ -141,8 +141,8 @@ where
         + Copy,
 {
     type Output = Fraction<T>;
-    fn add(self, rhs: Self) -> Self {
-        Self::new(self.n * rhs.d + rhs.n * self.d, self.d * rhs.d).unwrap()
+    fn add(self, rhs: Self) -> Self::Output {
+        Self{n: self.n * rhs.d + rhs.n * self.d, d: self.d * rhs.d}.simplify()
     }
 }
 
@@ -311,6 +311,16 @@ where
         self.n %= rhs.n * self.d;
         self.d = rhs.d;
         self.simplify_assign();
+    }
+}
+
+impl<T> Neg for Fraction<T>
+where
+    T: Neg<Output = T>
+{
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        Self{n: self.n.neg(), d: self.d}
     }
 }
 
